@@ -1,0 +1,44 @@
+version: '3.1'
+
+services:
+
+  nginx:
+    build: ./nginx
+    restart: always
+#    volumes:
+#      - ./log/nginx_access.log:/var/log/nginx/access.log
+#      - ./log/nginx_error.log:/var/log/nginx/error.log
+    ports:
+      - 80:80
+    depends_on:
+      - app
+
+  app:
+    container_name: app-prod
+    build: ./service
+    expose:
+      - 8000
+#    ports:
+#      - 8000:8000
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    environment:
+      STAGE: prod
+    links:
+      - mongo:mongo
+    depends_on:
+      - mongo
+
+
+  mongo:
+    container_name: mongo-prod
+    image: mongo
+    restart: always
+    expose:
+      - 27017
+#    ports:
+#      - 27017:27017
+    volumes:
+      - ./mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example

@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+
+  app-dev:
+    container_name: app-dev
+    build: service-dev/
+
+    ports:
+      - 8000:8000
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./service-dev/import_test_data.py:/usr/src/app/import_test_data.py
+      - ./service-dev/init_data.py:/usr/src/app/init_data.py
+      - ./test_data/employees.json:/usr/src/app/employees.json
+
+    environment:
+      STAGE: test
+    links:
+      - mongo-dev:mongo
+    depends_on:
+      - mongo-dev
+
+
+  mongo-dev:
+    container_name: mongo-dev
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
